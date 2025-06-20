@@ -24,7 +24,7 @@ const Header = () => {
             />
           </div>
 
-          <div className="middle flex justify-between mt-5 px-8">
+          <div className="middle flex flex-col sm:flex-row items-center gap-5 mb-2 justify-between mt-5 px-8">
             <div className="social_icons flex items-center gap-8">
               <FaFacebook size={25} className="text-blue-600" />
               <FaTwitter size={25} className="text-sky-600" />
