@@ -4,6 +4,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import axios from "axios";
 import html2canvas from "html2canvas";
+import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import {
   Card,
@@ -30,7 +31,7 @@ const DownloadCard = () => {
       if (error) {
         setprofile(null);
       }
-      alert(error.response?.data?.message);
+      toast.error(error.response?.data?.message);
     } finally {
       setLoading(false);
     }
