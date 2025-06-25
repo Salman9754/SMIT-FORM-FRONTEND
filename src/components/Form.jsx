@@ -88,7 +88,7 @@ const Form = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://localhost:3000/register",
+        "https://smit-form-production.up.railway.app/register",
         formData,
         {
           headers: {
