@@ -17,8 +17,10 @@ const DownloadCard = () => {
   const [Cnic, setCnic] = useState(null);
   const [profile, setprofile] = useState(null);
   const cardRef = useRef(null);
+  const [Loading, setLoading] = useState(false);
 
   const getStudent = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         `https://smit-form-production.up.railway.app/getCnic/${Cnic}`
@@ -29,6 +31,8 @@ const DownloadCard = () => {
         setprofile(null);
       }
       alert(error.response?.data?.message);
+    } finally {
+      setLoading(false);
     }
   };
   const handlePDFDownload = async () => {
@@ -76,7 +80,11 @@ const DownloadCard = () => {
             type="text"
             placeholder="CNIC (Which you provided during form submission)"
           />
-          <Button className="w-full mt-4" onClick={getStudent}>
+          <Button
+            disabled={Loading}
+            className="w-full mt-4"
+            onClick={getStudent}
+          >
             Submit
           </Button>
         </div>
