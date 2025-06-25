@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import axios from "axios";
 import * as yup from "yup";
 import { Input } from "@/components/ui/input";
+import { ToastContainer, toast } from "react-toastify";
 import {
   Select,
   SelectContent,
@@ -54,11 +56,13 @@ const schema = yup.object().shape({
       "Only JPG, JPEG or PNG allowed",
       (file) =>
         file && ["image/jpeg", "image/png", "image/jpg"].includes(file.type)
-    ),
+    )
+    .test("required", "Picture is required", (file) => !!file),
 });
 
 const Form = () => {
   const [imagePreview, setImagePreview] = useState(null);
+  const [Loading, setLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -69,30 +73,58 @@ const Form = () => {
   } = useForm({
     resolver: yupResolver(schema),
   });
-  const onSubmit = (data) => {
-    console.log("Form Submitted:", data);
-    alert("Submitted");
-    // const formData = new FormData();
-    // Object.entries(data).forEach(([key, value]) => {
-    //   formData.append(key, value);
-    // });
-    setTimeout(() => {
-      reset();
+  const onSubmit = async (data) => {
+    console.log(data);
+    console.log("Photo file:", data.photo); // check if it logs File {...}
 
-      // clear image preview
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === "photo" && value instanceof File) {
+        formData.append("photo", value); // ✅ correct way
+      } else {
+        formData.append(key, value);
+      }
+    });
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        "http://localhost:3000/register",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(response.data.message);
+
+      reset();
       setImagePreview(null);
-    }, 2000);
+
+      if (!response.data.success) {
+        toast.success(response.data.message);
+      } else {
+        toast.success(response.data.message);
+      }
+    } catch (error) {
+      console.error("❌ Axios Error:", error?.response?.data || error.message);
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const InputField = ({ label, name, type = "text", fullWidth = false }) => (
-    <div className={`${fullWidth ? "w-full" : "w-full sm:w-1/2"} px-2`}>
-      <Label htmlFor={name}>{label}</Label>
-      <Input id={name} type={type} {...register(name)} placeholder={label} />
-      {errors[name] && (
-        <p className="text-red-500 text-sm">{errors[name].message}</p>
-      )}
-    </div>
-  );
+  const InputField = ({ name, label, type = "text", fullWidth = false }) => {
+    return (
+      <div className={`${fullWidth ? "w-full" : "w-full sm:w-1/2"} px-2`}>
+        <Label htmlFor={name}>{label} </Label>
+        <Input id={name} type={type} {...register(name)} placeholder={label} />
+        {errors[name] && (
+          <p className="text-red-500 text-sm">{errors[name].message}</p>
+        )}
+      </div>
+    );
+  };
 
   const SelectField = ({
     label,
@@ -276,7 +308,12 @@ const Form = () => {
             </div>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <div className="flex justify-end items-center">
+          <Button type="submit" disabled={Loading} className="w-full sm:w-32">
+            Submit
+          </Button>
+        </div>
+        <div className="mt-5"></div>
       </form>
     </div>
   );
